@@ -1,4 +1,4 @@
-
+#include <vector>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -46,7 +46,7 @@ fstream database;
 int link_num = 0;
 
 char rec_buffer[MAXDATASIZE]; 
-char _result[MAXDATASIZE]; 
+char result[MAXDATASIZE]; 
 
 
 
@@ -129,7 +129,21 @@ int main() {
     char name_buffer[MAXDATASIZE];
     strncpy(name_buffer, rec_buffer, strlen(rec_buffer));
     namestr = strtok(rec_buffer, " ");
-    printf("ServerT received a request from Central to get the topology %s \n", namestr.c_str());
+    printf("ServerT received a request from Central to get the topology \n");
+    cout << name_buffer << endl;
+    cout << namestr << endl;
+    
+    vector<string> names;
+    std:: string input(name_buffer);
+    size_t start;
+    size_t end= 0;
+    while ((start = namestr.find_first_not_of(",", end)) != string::npos) {
+      end = namestr.find(",", start);
+      names.push_back(namestr.substr(start, end - start));
+    }
+    cout << names[0] << endl;
+    cout << names[1] << endl;
+    
   }
   
   close(sockfd_serverT);

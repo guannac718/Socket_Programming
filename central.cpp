@@ -245,15 +245,26 @@ int main() {
     
     init_connection_serverT();
     char namestr[MAXDATASIZE];
+    string str;
     const char* tmp = ",";
+    /*
     strcat(namestr, inputA_buf);
     strcat(namestr, tmp);
     strcat(namestr, inputB_buf);
+    */
+    str.append(inputA_buf);
+    str.append(",");
+    str.append(inputB_buf);
+    cout << "str is " << str << endl;
+    strcpy(namestr, str.c_str());
     printf("The Central server sent data to ServerT. \n");
+    cout << namestr << endl;
+    
     if (sendto(sockfd_UDP, namestr, sizeof(namestr), 0, (struct sockaddr *) &dest_serverT_addr, sizeof(dest_serverT_addr)) == FAIL) {
       perror("[ERROR] Central server failed to send data to ServerT.");
       exit(1);
     }
+    
     //printf("The Central server sent data to ServerT.");
     
   }
