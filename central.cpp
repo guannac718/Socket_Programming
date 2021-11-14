@@ -18,16 +18,22 @@ using namespace std;
 #define LOCAL_HOST "127.0.0.1"
 #define Central_clientA_TCP_PORT 25510
 #define Central_clientB_TCP_PORT 26510
+#define Central_UDP_PORT 24510
 #define FAIL -1
 #define BACKLOG 10
 #define MAXDATASIZE 1024
+#define serverT_PORT 21510
+#define serverS_PORT 22510
+#define serverP_PORT 23510
+
 
 int sockfd_clientA_TCP;
 int sockfd_clientB_TCP;
+int sockfd_UDP;
 int child_sockfd_clientA;
 int child_sockfd_clientB;
-struct sockaddr_in central_clientA_addr, central_clientB_addr;
-struct sockaddr_in dest_clientA_addr, dest_clientB_addr;
+struct sockaddr_in central_clientA_addr, central_clientB_addr, central_UDP_addr;
+struct sockaddr_in dest_clientA_addr, dest_clientB_addr, dest_serverT_addr, dest_serverS_addr, dest_serverP_addr;
 string nameA;
 string nameB;
 char input_buf[MAXDATASIZE];
@@ -37,9 +43,19 @@ void create_clientA_TCP_socket();
 
 void create_clientB_TCP_socket();
 
+void create_UDP_socket();
+
 void listen_clientA();
 
 void listen_clientB();
+
+void init_connection_serverT();
+
+void init_connection_serverS();
+
+void init_connection_serverP();
+
+
 
 void create_clientA_TCP_socket() {
   sockfd_clientA_TCP = socket(AF_INET, SOCK_STREAM, 0);
@@ -77,6 +93,25 @@ void create_clientB_TCP_socket() {
   }
 }
 
+void create_UDP_socket() {
+  sockfd_UDP = socket(AF_INET, SOCK_DGRAM, 0);
+  if (sockfd_UDP == FAIL) {
+    perror("[ERROR] Central server failed to create UDP socket.");
+    exit(1);
+  }
+
+  memset(&central_UDP_addr, 0, sizeof(central_UDP_addr));
+  central_UDP_addr.sin_family = AF_INET;
+  central_UDP_addr.sin_addr.s_addr = inet_addr(LOCAL_HOST);
+  central_UDP_addr.sin_port = htons(Central_UDP_PORT);
+
+  if (::bind(sockfd_UDP, (struct sockaddr *) &central_UDP_addr, sizeof(central_UDP_addr)) == FAIL) {
+    perror("[ERROR] Central server failed to bind UDP socket.");
+    exit(1);
+      
+  }
+}
+
 void listen_clientA() {
   if (listen(sockfd_clientA_TCP, BACKLOG) == FAIL) {
     perror("[ERROR] Central: fail to listen for client A socket");
@@ -91,12 +126,38 @@ void listen_clientB() {
   }
 }
 
+void init_connection_serverT() {
+  memset(&dest_serverT_addr, 0, sizeof(dest_serverT_addr));
+  dest_serverT_addr.sin_family = AF_INET;
+  dest_serverT_addr.sin_addr.s_addr = inet_addr(LOCAL_HOST);
+  dest_serverT_addr.sin_port = htons(serverT_PORT);
+  printf("Started connection w/ server T.");
+}
+
+void init_connection_serverS() {
+  memset(&dest_serverS_addr, 0, sizeof(dest_serverS_addr));
+  dest_serverS_addr.sin_family = AF_INET;
+  dest_serverS_addr.sin_addr.s_addr = inet_addr(LOCAL_HOST);
+  dest_serverS_addr.sin_port = htons(serverS_PORT);
+  printf("Started connection w/ server S.");
+}
+
+void init_connection_serverP() {
+  memset(&dest_serverP_addr, 0, sizeof(dest_serverP_addr));
+  dest_serverP_addr.sin_family = AF_INET;
+  dest_serverP_addr.sin_addr.s_addr = inet_addr(LOCAL_HOST);
+  dest_serverP_addr.sin_port = htons(serverP_PORT);
+  printf("Started connection w/ server P.");
+}
+
 int main() {
 
   create_clientA_TCP_socket();
   create_clientB_TCP_socket();
   listen_clientA();
   listen_clientB();
+
+  create_UDP_socket();
   printf("The central server is up and running \n");
 
 
@@ -135,6 +196,14 @@ int main() {
     strncpy(dataB_buffer, inputB_buf, strlen(inputB_buf));
     nameB = strtok(inputB_buf, " ");
     printf("The Central server received input=\"%s\" from the client using TCP over port %d \n", nameB.c_str(), Central_clientB_TCP_PORT);
+
+    init_connection_serverT();
+    if (sendto(sockfd_UDP, inputB_buf, sizeof(inputB_buf), 0, (struct sockaddr *) &dest_serverT_addr, sizeof(dest_serverT_addr)) == FAIL) {
+      perror("[ERROR] Central server failed to send data to ServerT.");
+      exit(1);
+    }
+    printf("The Central server sent data to ServerT.");
+    
   }
   
 
