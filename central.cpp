@@ -249,11 +249,12 @@ int main() {
     strcat(namestr, inputA_buf);
     strcat(namestr, tmp);
     strcat(namestr, inputB_buf);
+    printf("The Central server sent data to ServerT. \n");
     if (sendto(sockfd_UDP, namestr, sizeof(namestr), 0, (struct sockaddr *) &dest_serverT_addr, sizeof(dest_serverT_addr)) == FAIL) {
       perror("[ERROR] Central server failed to send data to ServerT.");
       exit(1);
     }
-    printf("The Central server sent data to ServerT.");
+    //printf("The Central server sent data to ServerT.");
     
   }
   
