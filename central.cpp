@@ -36,7 +36,7 @@ struct sockaddr_in central_clientA_addr, central_clientB_addr, central_UDP_addr;
 struct sockaddr_in dest_clientA_addr, dest_clientB_addr, dest_serverT_addr, dest_serverS_addr, dest_serverP_addr;
 string nameA;
 string nameB;
-char input_buf[MAXDATASIZE];
+char inputA_buf[MAXDATASIZE];
 char inputB_buf[MAXDATASIZE];
 
 void create_clientA_TCP_socket();
@@ -110,6 +110,8 @@ void create_UDP_socket() {
     exit(1);
       
   }
+
+  //printf("Successfully created UDP socket. \n");
 }
 
 void listen_clientA() {
@@ -131,7 +133,7 @@ void init_connection_serverT() {
   dest_serverT_addr.sin_family = AF_INET;
   dest_serverT_addr.sin_addr.s_addr = inet_addr(LOCAL_HOST);
   dest_serverT_addr.sin_port = htons(serverT_PORT);
-  printf("Started connection w/ server T.");
+  //printf("Started connection w/ server T. \n");
 }
 
 void init_connection_serverS() {
@@ -139,7 +141,7 @@ void init_connection_serverS() {
   dest_serverS_addr.sin_family = AF_INET;
   dest_serverS_addr.sin_addr.s_addr = inet_addr(LOCAL_HOST);
   dest_serverS_addr.sin_port = htons(serverS_PORT);
-  printf("Started connection w/ server S.");
+  printf("Started connection w/ server S. \n");
 }
 
 void init_connection_serverP() {
@@ -147,8 +149,48 @@ void init_connection_serverP() {
   dest_serverP_addr.sin_family = AF_INET;
   dest_serverP_addr.sin_addr.s_addr = inet_addr(LOCAL_HOST);
   dest_serverP_addr.sin_port = htons(serverP_PORT);
-  printf("Started connection w/ server P.");
+  printf("Started connection w/ server P. \n");
 }
+
+/**
+void receive_from_clientA() {
+  socklen_t clientA_addr_size = sizeof(dest_clientA_addr);
+  child_sockfd_clientA = ::accept(sockfd_clientA_TCP, (struct sockaddr *) &dest_clientA_addr, &clientA_addr_size);
+  if (child_sockfd_clientA == FAIL) {
+    perror("[ERROR] Central server failed to accept connection with client A.");
+    exit(1);
+  }
+  int recA = recv(child_sockfd_clientA, inputA_buf, MAXDATASIZE, 0);
+  if (recA == FAIL) {
+    perror("[ERROR] Central server failed to receive data from client A.");
+    exit(1);
+  }
+   	
+  char dataA_buffer[MAXDATASIZE];
+  strncpy(dataA_buffer, inputA_buf, strlen(inputA_buf));
+  nameA = strtok(inputA_buf, " ");
+  printf("The Central server received input=\"%s\" from the client using TCP over port %d \n", nameA.c_str(), Central_clientA_TCP_PORT);
+}
+
+void receive_from_clientB() {
+  socklen_t clientB_addr_size = sizeof(dest_clientB_addr);
+  child_sockfd_clientB = ::accept(sockfd_clientB_TCP, (struct sockaddr *) &dest_clientB_addr, &clientB_addr_size);
+  if (child_sockfd_clientB == FAIL) {
+    perror("[ERROR] Central server failed to accept connection with client B.");
+    exit(1);
+  }
+  int recB = recv(child_sockfd_clientB, inputB_buf, MAXDATASIZE, 0);
+  if (recB == FAIL) {
+    perror("[ERROR] Central server failed to receive data from client B.");
+    exit(1);
+  }
+   	
+  char dataB_buffer[MAXDATASIZE];
+  strncpy(dataB_buffer, inputB_buf, strlen(inputB_buf));
+  nameB = strtok(inputB_buf, " ");
+  printf("The Central server received input=\"%s\" from the client using TCP over port %d \n", nameB.c_str(), Central_clientB_TCP_PORT);
+}
+*/
 
 int main() {
 
@@ -158,28 +200,31 @@ int main() {
   listen_clientB();
 
   create_UDP_socket();
+  //init_connection_serverT();
   printf("The central server is up and running \n");
 
 
   while (1) {
+    
     socklen_t clientA_addr_size = sizeof(dest_clientA_addr);
     child_sockfd_clientA = ::accept(sockfd_clientA_TCP, (struct sockaddr *) &dest_clientA_addr, &clientA_addr_size);
     if (child_sockfd_clientA == FAIL) {
       perror("[ERROR] Central server failed to accept connection with client A.");
       exit(1);
     }
-    int recA = recv(child_sockfd_clientA, input_buf, MAXDATASIZE, 0);
+    int recA = recv(child_sockfd_clientA, inputA_buf, MAXDATASIZE, 0);
     if (recA == FAIL) {
       perror("[ERROR] Central server failed to receive data from client A.");
       exit(1);
     }
    	
-    char data_buffer[MAXDATASIZE];
-    strncpy(data_buffer, input_buf, strlen(input_buf));
-    nameA = strtok(input_buf, " ");
+    char dataA_buffer[MAXDATASIZE];
+    strncpy(dataA_buffer, inputA_buf, strlen(inputA_buf));
+    nameA = strtok(inputA_buf, " ");
     printf("The Central server received input=\"%s\" from the client using TCP over port %d \n", nameA.c_str(), Central_clientA_TCP_PORT);
+    
 
-
+    
     socklen_t clientB_addr_size = sizeof(dest_clientB_addr);
     child_sockfd_clientB = ::accept(sockfd_clientB_TCP, (struct sockaddr *) &dest_clientB_addr, &clientB_addr_size);
     if (child_sockfd_clientB == FAIL) {
@@ -196,9 +241,15 @@ int main() {
     strncpy(dataB_buffer, inputB_buf, strlen(inputB_buf));
     nameB = strtok(inputB_buf, " ");
     printf("The Central server received input=\"%s\" from the client using TCP over port %d \n", nameB.c_str(), Central_clientB_TCP_PORT);
-
+    
+    
     init_connection_serverT();
-    if (sendto(sockfd_UDP, inputB_buf, sizeof(inputB_buf), 0, (struct sockaddr *) &dest_serverT_addr, sizeof(dest_serverT_addr)) == FAIL) {
+    char namestr[MAXDATASIZE];
+    const char* tmp = ",";
+    strcat(namestr, inputA_buf);
+    strcat(namestr, tmp);
+    strcat(namestr, inputB_buf);
+    if (sendto(sockfd_UDP, namestr, sizeof(namestr), 0, (struct sockaddr *) &dest_serverT_addr, sizeof(dest_serverT_addr)) == FAIL) {
       perror("[ERROR] Central server failed to send data to ServerT.");
       exit(1);
     }

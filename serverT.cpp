@@ -117,16 +117,21 @@ int main() {
    
   bind_socket();
 
-  /**
+  
   while (true) {
     
-    socklen_t aws_addr_size = sizeof(aws_addr);
-    if (::recvfrom(sockfd_serverA_UDP, recv_buf, sizeof(recv_buf), 0, (struct sockaddr *) &aws_addr, &aws_addr_size) == FAIL) {
-      perror("[ERROR] Server A: fail to receive data from AWS server");
+    socklen_t central_addr_size = sizeof(central_addr);
+    if (::recvfrom(sockfd_serverT, rec_buffer, sizeof(rec_buffer), 0, (struct sockaddr *) &central_addr, &central_addr_size) == FAIL_CODE) {
+      perror("[ERROR] ServerT failed to receive data from Central server");
       exit(1);
     }
+
+    char name_buffer[MAXDATASIZE];
+    strncpy(name_buffer, rec_buffer, strlen(rec_buffer));
+    namestr = strtok(rec_buffer, " ");
+    printf("ServerT received a request from Central to get the topology %s \n", namestr.c_str());
   }
-  */
+  
   close(sockfd_serverT);
   return 0; 
 }
