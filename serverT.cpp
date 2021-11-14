@@ -168,15 +168,19 @@ int main() {
       }
       cout << nodes[0] << endl;
       cout << nodes[1] << endl;
-      nameMap.insert(std::pair<string, int>(nodes[0], index));
-      nameMap.insert(std::pair<string, int>(nodes[1],index + 1));
+      cout << "index is " << index << endl;
+      //nameMap.insert(std::pair<string, int>(nodes[0], index));
+      //nameMap.insert(std::pair<string, int>(nodes[1], index + 1));
       index += 2;
+      
     }
 
     cout << "Finished building map." << endl;
+    /*
     for (map<string, int>::iterator it = nameMap.begin(); it != nameMap.end(); it++) {
       cout << it->first << "=>" << it->second << endl;
     }
+    */
     
     
   }
