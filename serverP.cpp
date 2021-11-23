@@ -67,8 +67,6 @@ void init_central_connection();
 // 3. Bind a socket
 void bind_socket();
 
-void findShortestPath(string name1, string name2, int curCost, string curPath, map<string, vector<string> >* graph, map<string, int> score, string* path, int* cost, set<string> set);
-
 float cal_cost(int one, int two);
 
 // 4. Receive data from AWS
@@ -116,34 +114,6 @@ void bind_socket() {
 
     printf("The Server P is up and running using UDP on port %d. \n", serverP_UDP_PORT);
 }
-/*
-void findShortestPath(string name1, string name2, int curCost, string curPath, map<string, vector<string> >* graph, map<string, int> score, string* path, int* cost, set<string> set) {
-  if (name1 == name2) {
-    cur += calc_cost(name1, name2, score);
-    if (cur < cost) {
-      cost = cur;
-      path = curPath + " --- " + name2;
-    }
-    return;
-  }
-  //path += " --- " + name1;
-  
-  for (string nei : graph.at(name1)) {
-    if (set.count(nei) == 0) {
-      set.insert(nei);
-      int c = calc_cost(name1, nei, score);
-      curCost += c;
-      string tmp = curPath;
-      curPath += " --- " + nei;
-      findShortestPath(nei, name2, curCost, curPath, graph, score, path, cost, set);
-      curPath = tmp;
-      curCost -= c;
-      set.erase(nei);
-    }
-    
-  }
-}
-*/
 
 float cal_cost(int one, int two) {
   return (1.0 * abs(one - two)) / (1.0 * (one + two));
@@ -168,7 +138,7 @@ int main() {
       exit(1);
     }
 
-    //cout << "rec_buffer is " << rec_buffer << endl;
+    cout << "rec_buffer is " << rec_buffer << endl;
     printf("ServerT received a request from Central to get the topology \n");
 
     // Split received data into graph and scores
@@ -176,16 +146,42 @@ int main() {
     string inputstr(rec_buffer);
     istringstream iss(inputstr);
     std::string token;
-    while (std::getline(iss, token, '.')) {
+    while (std::getline(iss, token, ';')) {
       if (!token.empty()) {
 	namesvec.push_back(token);
       }
     }
-    string names = namesvec[0];
-    string scores = namesvec[1];
+    string inputs = namesvec[0];
+    string name1;
+    string name2;
+    for (int i = 0; i < inputs.length(); i++) {
+	if (inputs[i] == ',') {
+	  name1 = name2;
+          name2 = "";
+	  //cout << "name is " << name << endl;
+	} else if (i == inputs.length() - 1) {
+          name2 += inputs[i];
+	  //cout << "score is " << word << endl;
+	} else {
+          name2 = name2 + inputs[i];
+	}
+    }
+    cout << "name 1 is " << name1 << endl;
+    cout << "name 2 is " << name2 << endl;
+    string remaining = namesvec[1];
+    vector<string> inputvec;
+    istringstream tmp(remaining);
+    std::string curBuffer;
+    while (std::getline(tmp, curBuffer, '.')) {
+      if (!curBuffer.empty()) {
+	inputvec.push_back(curBuffer);
+      }
+    }
+    string names = inputvec[0];
+    string scores = inputvec[1];
     scores = scores.substr(0, scores.length() - 1);
     cout << "names are " << names << endl;
-    //cout << "scores are " << scores << endl;
+    cout << "scores are " << scores << endl;
     
     // Build scores map
     map<string, int> scoreMap;
@@ -285,6 +281,8 @@ int main() {
       }
       cout << endl;
     }
+
+    
     /*
     char tmp_char[MAXDATASIZE];
     strcpy(tmp_char, tmp.c_str());

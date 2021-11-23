@@ -253,7 +253,9 @@ int main() {
     // Sending graph and scores to serverP
     
     char graph_scores[MAXDATASIZE];
-    strcpy(graph_scores, graph_buffer);
+    strcpy(graph_scores, namestr);
+    strcat(graph_scores, ";");
+    strcat(graph_scores, graph_buffer);
     strcat(graph_scores, ".");
     strcat(graph_scores, score_buffer);
     cout << graph_scores << endl;
