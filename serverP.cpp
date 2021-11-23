@@ -9,6 +9,7 @@
 #include <map>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <set>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/wait.h>
@@ -65,6 +66,10 @@ void init_central_connection();
 // 3. Bind a socket
 void bind_socket();
 
+void findShortestPath(string name1, string name2, int curCost, string curPath, map<string, vector<string> >* graph, map<string, int> score, string* path, int* cost, set<string> set);
+
+int calc_cost(string name1, string name2, map<string, int> score);
+
 // 4. Receive data from AWS
 
 // 5. Write the data into database (database.txt)
@@ -109,6 +114,33 @@ void bind_socket() {
     
 
     printf("The Server P is up and running using UDP on port %d. \n", serverP_UDP_PORT);
+}
+
+void findShortestPath(string name1, string name2, int curCost, string curPath, map<string, vector<string> >* graph, map<string, int> score, string* path, int* cost, set<string> set) {
+  if (name1 == name2) {
+    cur += calc_cost(name1, name2, score);
+    if (cur < cost) {
+      cost = cur;
+      path = curPath + " --- " + name2;
+    }
+    return;
+  }
+  //path += " --- " + name1;
+  
+  for (string nei : graph.at(name1)) {
+    if (set.count(nei) == 0) {
+      set.insert(nei);
+      int c = calc_cost(name1, nei, score);
+      curCost += c;
+      string tmp = curPath;
+      curPath += " --- " + nei;
+      findShortestPath(nei, name2, curCost, curPath, graph, score, path, cost, set);
+      curPath = tmp;
+      curCost -= c;
+      set.erase(nei);
+    }
+    
+  }
 }
 
 
@@ -208,122 +240,22 @@ int main() {
 	    cur += relation[i];
 	    neis.push_back(cur);
 	    cout << "neis are ";
-	    for (string nei : neis) {
-	      cout << nei;
-	    }
-	    cout << endl;
-	    //scoreMap.insert(std::pair<string, int>(name, tmp));
+	    
+	    graph.insert(std::pair<string, vector<string> >(node, neis));
 	  } else {
 	    cur = cur + relation[i];
 	  }
 	}
       }
     }
-    /*
-    // Read graph from edgelist.txt
-    std::ifstream graphInput("edgelist.txt");
-    if (graphInput == NULL) {
-      perror("[ERROR] ServerT: edgelist.txt not found.");
-      exit(1);
-    }
-    map<string, int> nameMap;
-    map<int, string> indexMap;
-    int adjmatrix[1000][1000];
-    int index = 0;
-    while (graphInput.eof() != true) {
-      std::string line;
-      std::getline(graphInput, line);
-      //cout << line << endl;
-      if (!line.empty()) {
-	 size_t start;
-	 size_t end= 0;
-	 vector<string> nodes;
-      
-	 string word = "";
-	 string prevWord = "";
-	 for (int i = 0; i < line.length(); i++) {
-	   if (line[i] == ' ') {
-	     //nodes.push_back(word);
-	     //cout << word << endl;
-	     if (nameMap.count(word) == 0) {
-	       nameMap.insert(std::pair<string, int>(word, index));
-	       indexMap.insert(std::pair<int, string>(index, word));
-	       index++;
-	     }
-	     prevWord = word;
-	     word = "";
-	   } else if (i == line.length() - 1) {
-	     word = word + line[i];
-	     //cout << word << endl;
-	     if (nameMap.count(word) == 0) {
-	       nameMap.insert(std::pair<string, int>(word, index));
-	       indexMap.insert(std::pair<int, string>(index, word));
-	       index++;
-	     }	    
-	   } else {
-	     word = word + line[i];
-	   }
-	 }
-	 //cout << nameMap.at(prevWord) << endl;
-	 //cout << nameMap.at(word) << endl;
-	 adjmatrix[nameMap.at(prevWord)][nameMap.at(word)] = 1;
-	 adjmatrix[nameMap.at(word)][nameMap.at(prevWord)] = 1;
-      }
-      // delete &line;
-     
-      
-    }
-    */
-    
-    
-    //cout << "Finished building map." << endl;
 
+    // DFS Algorithm to find the shortest path
+    string path = name1;
+    int cost;
+    set<string> set;
+    findShortestPath(name1, name2, 0, "", graph, scoreMap, &path, &cost, &set);
+    
     /*
-    for (map<string, int>::iterator it = nameMap.begin(); it != nameMap.end(); it++) {
-      cout << it->first << " => " << it->second << endl;
-    }
-    cout << "name1's index is " << nameMap.at(name1) << endl;
-    cout << "name2's index is " << nameMap.at(name2) << endl;
-    */
-    /*
-    int index_1 = nameMap.at(name1);
-    int index_2 = nameMap.at(name2);
-    int size = nameMap.size();
-    vector<string> graph;
-    list<int> indices;
-    string nei = "";
-    nei += name1 + " ";
-    for (int j = 0; j < size; j++) {
-      if (adjmatrix[index_1][j] == 1) {
-	indices.push_back(j);
-	nei += indexMap.at(j) + " ";
-      }
-    }
-    //cout << nei << endl;
-    nei = nei.substr(0, nei.length());
-    graph.push_back(nei);
-    nei = "";
-    for (list<int>::iterator ind = indices.begin(); ind != indices.end(); ind++) {
-      nei += indexMap.at(*ind) + " ";
-      for (int j = 0; j < size; j++) {
-	if (j != index_1 && adjmatrix[*ind][j] == 1) {
-	  nei += indexMap.at(j) + " ";
-	}	
-      }
-      //cout << nei << endl;
-      nei = nei.substr(0, nei.length());
-      graph.push_back(nei);
-      nei = "";
-    }
-
-    string tmp = "";
-    for (std::vector<string>::iterator it = graph.begin(); it != graph.end(); it++) {
-      tmp += *it;
-      if (it != graph.end() - 1) {
-	tmp += ",";
-      }
-      
-    }
     char tmp_char[MAXDATASIZE];
     strcpy(tmp_char, tmp.c_str());
     cout << tmp_char << endl;
