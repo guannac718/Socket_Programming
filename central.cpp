@@ -152,46 +152,6 @@ void init_connection_serverP() {
   printf("Started connection w/ server P. \n");
 }
 
-/**
-void receive_from_clientA() {
-  socklen_t clientA_addr_size = sizeof(dest_clientA_addr);
-  child_sockfd_clientA = ::accept(sockfd_clientA_TCP, (struct sockaddr *) &dest_clientA_addr, &clientA_addr_size);
-  if (child_sockfd_clientA == FAIL) {
-    perror("[ERROR] Central server failed to accept connection with client A.");
-    exit(1);
-  }
-  int recA = recv(child_sockfd_clientA, inputA_buf, MAXDATASIZE, 0);
-  if (recA == FAIL) {
-    perror("[ERROR] Central server failed to receive data from client A.");
-    exit(1);
-  }
-   	
-  char dataA_buffer[MAXDATASIZE];
-  strncpy(dataA_buffer, inputA_buf, strlen(inputA_buf));
-  nameA = strtok(inputA_buf, " ");
-  printf("The Central server received input=\"%s\" from the client using TCP over port %d \n", nameA.c_str(), Central_clientA_TCP_PORT);
-}
-
-void receive_from_clientB() {
-  socklen_t clientB_addr_size = sizeof(dest_clientB_addr);
-  child_sockfd_clientB = ::accept(sockfd_clientB_TCP, (struct sockaddr *) &dest_clientB_addr, &clientB_addr_size);
-  if (child_sockfd_clientB == FAIL) {
-    perror("[ERROR] Central server failed to accept connection with client B.");
-    exit(1);
-  }
-  int recB = recv(child_sockfd_clientB, inputB_buf, MAXDATASIZE, 0);
-  if (recB == FAIL) {
-    perror("[ERROR] Central server failed to receive data from client B.");
-    exit(1);
-  }
-   	
-  char dataB_buffer[MAXDATASIZE];
-  strncpy(dataB_buffer, inputB_buf, strlen(inputB_buf));
-  nameB = strtok(inputB_buf, " ");
-  printf("The Central server received input=\"%s\" from the client using TCP over port %d \n", nameB.c_str(), Central_clientB_TCP_PORT);
-}
-*/
-
 int main() {
 
   create_clientA_TCP_socket();
@@ -200,7 +160,7 @@ int main() {
   listen_clientB();
 
   create_UDP_socket();
-  //init_connection_serverT();
+  
   printf("The central server is up and running \n");
 
 
@@ -247,11 +207,6 @@ int main() {
     char namestr[MAXDATASIZE];
     string str;
     const char* tmp = ",";
-    /*
-    strcat(namestr, inputA_buf);
-    strcat(namestr, tmp);
-    strcat(namestr, inputB_buf);
-    */
     str.append(inputA_buf);
     str.append(",");
     str.append(inputB_buf);
@@ -278,6 +233,13 @@ int main() {
     }
 
     cout << graph_buffer << endl;
+
+    init_connection_serverS();
+    // Sending names to ServerS to get the scores
+     if (sendto(sockfd_UDP, graph_buffer, sizeof(graph_buffer), 0, (struct sockaddr *) &dest_serverS_addr, sizeof(dest_serverS_addr)) == FAIL) {
+      perror("[ERROR] Central server failed to send data to ServerS.");
+      exit(1);
+    }
     
   }
   
