@@ -9,6 +9,7 @@
 #include <map>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <cmath>
 #include <set>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -68,7 +69,7 @@ void bind_socket();
 
 void findShortestPath(string name1, string name2, int curCost, string curPath, map<string, vector<string> >* graph, map<string, int> score, string* path, int* cost, set<string> set);
 
-int calc_cost(string name1, string name2, map<string, int> score);
+float cal_cost(int one, int two);
 
 // 4. Receive data from AWS
 
@@ -115,7 +116,7 @@ void bind_socket() {
 
     printf("The Server P is up and running using UDP on port %d. \n", serverP_UDP_PORT);
 }
-
+/*
 void findShortestPath(string name1, string name2, int curCost, string curPath, map<string, vector<string> >* graph, map<string, int> score, string* path, int* cost, set<string> set) {
   if (name1 == name2) {
     cur += calc_cost(name1, name2, score);
@@ -141,6 +142,11 @@ void findShortestPath(string name1, string name2, int curCost, string curPath, m
     }
     
   }
+}
+*/
+
+float cal_cost(int one, int two) {
+  return (1.0 * abs(one - two)) / (1.0 * (one + two));
 }
 
 
@@ -209,52 +215,76 @@ int main() {
       
     }
 
-    /*
+    
     for (map<string, int>::iterator it = scoreMap.begin(); it != scoreMap.end(); ++it) {
       cout << it->first << ":" << it->second << endl;
     }
-    */
+    
 
-    // Build graph with structure map<string, vector<string> >
-    map<string, vector<string> > graph;
+    // Build graph 
+    float adjmatrix[1000][1000];
+    map<string, int> nameMap;
+    map<int, string> indexMap;
+    int index = 0;
     istringstream ssm(names);
     std::string relation;
+    int edgeNum = 0;
     while (std::getline(ssm, relation, ',')) {
       cout << "relation is " << relation << endl;
-      relation = relation.substr(0, relation.length() - 1);
-      string cur = "";
-      string node = "";
-      vector<string> neis;
       if (!relation.empty()) {
+	size_t start;
+	size_t end = 0;
+	vector<string> nodes;
+	string word = "";
+	string prevWord = "";
 	for (int i = 0; i < relation.length(); i++) {
 	  if (relation[i] == ' ') {
-	    if (node == "") {
-	      node = cur;
-	    } else {
-	      neis.push_back(cur);
-	      
+	    if (nameMap.count(word) == 0) {
+	      nameMap.insert(std::pair<string, int>(word, index));
+	      indexMap.insert(std::pair<int, string>(index, word));
+	      index++;
 	    }
-	    cur = "";
-	    //cout << "node is " << node << endl;
+	    prevWord = word;
+	    word = "";
 	  } else if (i == relation.length() - 1) {
-	    cur += relation[i];
-	    neis.push_back(cur);
-	    cout << "neis are ";
-	    
-	    graph.insert(std::pair<string, vector<string> >(node, neis));
+	    word = word + relation[i];
+	    if (nameMap.count(word) == 0) {
+	      nameMap.insert(std::pair<string, int>(word, index));
+	      indexMap.insert(std::pair<int, string>(index, word));
+	      index++;
+	    }
 	  } else {
-	    cur = cur + relation[i];
+	    word += relation[i];
 	  }
 	}
+	cout << scoreMap.at(prevWord) << " ";
+	cout << scoreMap.at(word) << endl;
+	float cost = cal_cost(scoreMap.at(prevWord), scoreMap.at(word));
+	cout << prevWord << " " << word << ":" << cost << endl;
+	adjmatrix[nameMap.at(prevWord)][nameMap.at(word)] = cost;
+	adjmatrix[nameMap.at(word)][nameMap.at(prevWord)] = cost;
       }
+      edgeNum++;
+     
+      
     }
 
-    // DFS Algorithm to find the shortest path
-    string path = name1;
-    int cost;
-    set<string> set;
-    findShortestPath(name1, name2, 0, "", graph, scoreMap, &path, &cost, &set);
+    cout << "nameMap: " << endl;
+    for (map<string, int>::iterator it = nameMap.begin(); it != nameMap.end(); ++it) {
+      cout << it->first << ":" << it->second << endl;
+    }
+
+    cout << "indexMap: " << endl;
+    for (map<int, string>::iterator it = indexMap.begin(); it != indexMap.end(); ++it) {
+      cout << it->first << ":" << it->second << endl;
+    }
     
+    for (int i = 0; i < edgeNum; i++) {
+      for (int j = 0; j < edgeNum; j++) {
+	cout << adjmatrix[i][j] << ' ';
+      }
+      cout << endl;
+    }
     /*
     char tmp_char[MAXDATASIZE];
     strcpy(tmp_char, tmp.c_str());

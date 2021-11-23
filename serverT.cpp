@@ -7,6 +7,8 @@
 #include <string.h>
 #include <netdb.h>
 #include <map>
+#include <queue>
+#include <set>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -206,19 +208,45 @@ int main() {
     //cout << "Finished building map." << endl;
 
     /*
-    for (map<string, int>::iterator it = nameMap.begin(); it != nameMap.end(); it++) {
+    for (map<int, string>::iterator it = indexMap.begin(); it != indexMap.end(); it++) {
       cout << it->first << " => " << it->second << endl;
     }
-    cout << "name1's index is " << nameMap.at(name1) << endl;
-    cout << "name2's index is " << nameMap.at(name2) << endl;
     */
+    //cout << "name1's index is " << nameMap.at(name1) << endl;
+    //cout << "name2's index is " << nameMap.at(name2) << endl;
+    
     int index_1 = nameMap.at(name1);
     int index_2 = nameMap.at(name2);
     int size = nameMap.size();
     vector<string> graph;
-    list<int> indices;
-    string nei = "";
-    nei += name1 + " ";
+    queue<int> bfs;
+    bfs.push(index_1);
+    set<int> visited;
+    visited.insert(index_1);
+    //cout << "Starting BFS" << endl;
+    while (!bfs.empty()) {
+      int size = bfs.size();
+      for (int i = 0; i < size; i++) {
+	int curNode = bfs.front();
+	bfs.pop();
+	for (int j = 0; j < sizeof(adjmatrix[0]) / sizeof(int); j++) {
+	  if (adjmatrix[curNode][j] == 1) {
+	   
+	    if (visited.count(j) == 0) {
+	       bfs.push(j);
+	       visited.insert(j);
+	    }
+	    //string curE = indexMap.at(curNode) + " " + indexMap.at(j);
+	    //cout << "curE: " << curE << endl;
+	    graph.push_back(indexMap.at(curNode) + " " + indexMap.at(j));
+	  }
+	}
+      }
+    }
+    //list<int> indices;
+    //string edge = "";
+    //nei += name1 + " ";
+    /*
     for (int j = 0; j < size; j++) {
       if (adjmatrix[index_1][j] == 1) {
 	indices.push_back(j);
@@ -241,7 +269,7 @@ int main() {
       graph.push_back(nei);
       nei = "";
     }
-
+    */
     string tmp = "";
     for (std::vector<string>::iterator it = graph.begin(); it != graph.end(); it++) {
       tmp += *it;
@@ -250,6 +278,7 @@ int main() {
       }
       
     }
+    
     char tmp_char[MAXDATASIZE];
     strcpy(tmp_char, tmp.c_str());
     cout << tmp_char << endl;
