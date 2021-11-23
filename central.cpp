@@ -240,6 +240,16 @@ int main() {
       perror("[ERROR] Central server failed to send data to ServerS.");
       exit(1);
     }
+
+     // Receiving scores from serverS
+    char score_buffer[MAXDATASIZE];
+    central_addr_size = sizeof(dest_serverS_addr);
+    if (::recvfrom(sockfd_UDP, score_buffer, sizeof(score_buffer), 0, (struct sockaddr *) &dest_serverS_addr, &central_addr_size) == FAIL) {
+      perror("[ERROR] Central server failed to receive data from ServerS.");
+      exit(1);
+    }
+
+    cout << score_buffer << endl;
     
   }
   

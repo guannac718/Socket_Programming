@@ -12,7 +12,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/wait.h>
-#include <unordered_set>
+//#include <unordered_set>
 #include <string>
 #include <iostream>
 #include <stdlib.h>
@@ -127,14 +127,14 @@ int main() {
     // Receive data from Central server
     socklen_t central_addr_size = sizeof(central_addr);
     if (::recvfrom(sockfd_serverS, rec_buffer, sizeof(rec_buffer), 0, (struct sockaddr *) &central_addr, &central_addr_size) == FAIL_CODE) {
-      perror("[ERROR] ServerT failed to receive data from Central server");
+      perror("[ERROR] ServerS failed to receive data from Central server");
       exit(1);
     }
 
     char name_buffer[MAXDATASIZE];
-    strncpy(name_buffer, rec_buffer, strlen(rec_buffer));
-    namestr = strtok(rec_buffer, " ");
-    printf("ServerT received a request from Central to get the topology \n");
+    //strncpy(name_buffer, rec_buffer, strlen(rec_buffer));
+    //namestr = strtok(rec_buffer, " ");
+    printf("ServerS received a request from Central to get the topology \n");
 
     // Split received data into two names
     
@@ -183,10 +183,11 @@ int main() {
     
     //cout << "Finished building map." << endl;
 
-    
+    /*
     for (map<string, string>::iterator it = scoreMap.begin(); it != scoreMap.end(); it++) {
       cout << it->first << " => " << it->second << endl;
     }
+    */
 
     // Split names sent from Central to ServerS
     cout << rec_buffer << endl;
@@ -194,6 +195,7 @@ int main() {
     std:: string input(rec_buffer);
     size_t start;
     size_t end= 0;
+    string res = "";
     while ((start = input.find_first_not_of(",", end)) != string::npos) {
       end = input.find(",", start);
       string newinput = input.substr(start, end - start);
@@ -201,27 +203,30 @@ int main() {
       size_t newend= 0;
       while ((newstart = newinput.find_first_not_of(" ", newend)) != string::npos) {
 	newend = newinput.find(" ", newstart);
-        cout << newinput.substr(newstart, newend - newstart) << endl;
+	string tmp = newinput.substr(newstart, newend - newstart);
+        res += tmp + " ";
+	res += scoreMap.at(tmp) + ",";
       }
     
     }
 
+    cout << "res is " << res << endl;
 
     /*
     for ( it = nameSet.begin(); it != nameSet.end(); ++it) {
       cout << *it << " " << scoreMap.at(*it) << endl;
     }
     */
-    /*
+    
     char tmp_char[MAXDATASIZE];
-    strcpy(tmp_char, tmp.c_str());
-    cout << tmp_char << endl;
+    strcpy(tmp_char, res.c_str());
+    cout << "tmp_char is " << tmp_char << endl;
     
     if (sendto(sockfd_serverS, tmp_char, sizeof(tmp_char), 0, (struct sockaddr *) &central_addr, sizeof(central_addr)) == FAIL_CODE) {
       perror("[ERROR] ServerS failed to send data to Central Server.");
       exit(1);
     }
-    */
+    
    
   }
   
