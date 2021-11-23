@@ -255,10 +255,10 @@ int main() {
     str.append(inputA_buf);
     str.append(",");
     str.append(inputB_buf);
-    cout << "str is " << str << endl;
+    //cout << "str is " << str << endl;
     strcpy(namestr, str.c_str());
-    printf("The Central server sent data to ServerT. \n");
-    cout << namestr << endl;
+    //printf("The Central server sent data to ServerT. \n");
+    //cout << namestr << endl;
     
     if (sendto(sockfd_UDP, namestr, sizeof(namestr), 0, (struct sockaddr *) &dest_serverT_addr, sizeof(dest_serverT_addr)) == FAIL) {
       perror("[ERROR] Central server failed to send data to ServerT.");
@@ -266,6 +266,18 @@ int main() {
     }
     
     //printf("The Central server sent data to ServerT.");
+
+
+    // Receiving data from ServerT
+    vector<string> rec_graph;
+    char graph_buffer[MAXDATASIZE];
+    socklen_t central_addr_size = sizeof(dest_serverT_addr);
+    if (::recvfrom(sockfd_UDP, graph_buffer, sizeof(graph_buffer), 0, (struct sockaddr *) &dest_serverT_addr, &central_addr_size) == FAIL) {
+      perror("[ERROR] Central server failed to receive data from ServerT.");
+      exit(1);
+    }
+
+    cout << graph_buffer << endl;
     
   }
   

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include <list>
 #include <string.h>
 #include <netdb.h>
 #include <map>
@@ -31,7 +32,7 @@ using namespace std;
  * Named Constants
  */
 #define LOCAL_HOST "127.0.0.1" // Host address
-#define serverT_UDP_PORT 21510 // Server A port number
+#define serverT_UDP_PORT 21510 // Server T port number
 #define MAXDATASIZE 1024 // max number of bytes we can get at once
 #define FAIL_CODE -1
 
@@ -89,7 +90,7 @@ void init_central_connection() {
 
     // Server A side information
     // Initialize server A IP address, port number
-  memset(&serverT_addr, 0, sizeof(serverT_addr)); //  make sure the struct is empty
+    memset(&serverT_addr, 0, sizeof(serverT_addr)); //  make sure the struct is empty
     serverT_addr.sin_family = AF_INET; // Use IPv4 address family
     serverT_addr.sin_addr.s_addr = inet_addr(LOCAL_HOST); // Host IP address
     serverT_addr.sin_port = htons(serverT_UDP_PORT); // Server A port number
@@ -109,6 +110,7 @@ void bind_socket() {
 
     printf("The Server T is up and running using UDP on port %d. \n", serverT_UDP_PORT);
 }
+
 
 int main() {
 
@@ -142,6 +144,8 @@ int main() {
       end = namestr.find(",", start);
       names.push_back(namestr.substr(start, end - start));
     }
+    string name1 = names[0];
+    string name2 = names[1];
     //cout << names[0] << endl;
     //cout << names[1] << endl;
 
@@ -152,62 +156,109 @@ int main() {
       exit(1);
     }
     map<string, int> nameMap;
+    map<int, string> indexMap;
     int adjmatrix[1000][1000];
     int index = 0;
     while (graphInput.eof() != true) {
       std::string line;
       std::getline(graphInput, line);
       //cout << line << endl;
-      // delete &line;
-      size_t start;
-      size_t end= 0;
-      vector<string> nodes;
+      if (!line.empty()) {
+	 size_t start;
+	 size_t end= 0;
+	 vector<string> nodes;
       
-      string word = "";
-      string prevWord = "";
-      for (int i = 0; i < line.length(); i++) {
-	if (line[i] == ' ') {
-	  //nodes.push_back(word);
-	  //cout << word << endl;
-	  if (nameMap.count(word) == 0) {
-	    nameMap.insert(std::pair<string, int>(word, index));
-	    index++;
-	  }
-	  prevWord = word;
-	  word = "";
-	} else if (i == line.length() - 1) {
-	  word = word + line[i];
-	  //cout << word << endl;
-	  if (nameMap.count(word) == 0) {
-	    nameMap.insert(std::pair<string, int>(word, index));
-	    index++;
-	  }	    
-	} else {
-	  word = word + line[i];
-	}
+	 string word = "";
+	 string prevWord = "";
+	 for (int i = 0; i < line.length(); i++) {
+	   if (line[i] == ' ') {
+	     //nodes.push_back(word);
+	     //cout << word << endl;
+	     if (nameMap.count(word) == 0) {
+	       nameMap.insert(std::pair<string, int>(word, index));
+	       indexMap.insert(std::pair<int, string>(index, word));
+	       index++;
+	     }
+	     prevWord = word;
+	     word = "";
+	   } else if (i == line.length() - 1) {
+	     word = word + line[i];
+	     //cout << word << endl;
+	     if (nameMap.count(word) == 0) {
+	       nameMap.insert(std::pair<string, int>(word, index));
+	       indexMap.insert(std::pair<int, string>(index, word));
+	       index++;
+	     }	    
+	   } else {
+	     word = word + line[i];
+	   }
+	 }
+	 //cout << nameMap.at(prevWord) << endl;
+	 //cout << nameMap.at(word) << endl;
+	 adjmatrix[nameMap.at(prevWord)][nameMap.at(word)] = 1;
+	 adjmatrix[nameMap.at(word)][nameMap.at(prevWord)] = 1;
       }
-      cout << prevWord << nameMap.at(prevWord) << endl;
-      cout << word << nameMap.at(word) << endl;
-      //adjmatrix[nameMap.at(prevWord)][nameMap.at(word)] = 1;
-      //adjmatrix[nameMap.at(word)][nameMap.at(prevWord)] = 1;
-      //cout << nodes[0] << endl;
-      //cout << nodes[1] << endl;
-      //cout << "index is " << index << endl;
-      //nameMap.insert(std::pair<string, int>(nodes[0], index));
-      //nameMap.insert(std::pair<string, int>(nodes[1], index + 1));
-      //index += 2;
+      // delete &line;
+     
+      
+    }
+    
+    //cout << "Finished building map." << endl;
 
-    }
-    
-    cout << "Finished building map." << endl;
-    
+    /*
     for (map<string, int>::iterator it = nameMap.begin(); it != nameMap.end(); it++) {
-      cout << it->first << "=>" << it->second << endl;
+      cout << it->first << " => " << it->second << endl;
     }
+    cout << "name1's index is " << nameMap.at(name1) << endl;
+    cout << "name2's index is " << nameMap.at(name2) << endl;
+    */
+    int index_1 = nameMap.at(name1);
+    int index_2 = nameMap.at(name2);
+    int size = nameMap.size();
+    vector<string> graph;
+    list<int> indices;
+    string nei = "";
+    nei += name1 + " ";
+    for (int j = 0; j < size; j++) {
+      if (adjmatrix[index_1][j] == 1) {
+	indices.push_back(j);
+	nei += indexMap.at(j) + " ";
+      }
+    }
+    //cout << nei << endl;
+    nei = nei.substr(0, nei.length());
+    graph.push_back(nei);
+    nei = "";
+    for (list<int>::iterator ind = indices.begin(); ind != indices.end(); ind++) {
+      nei += indexMap.at(*ind) + " ";
+      for (int j = 0; j < size; j++) {
+	if (j != index_1 && adjmatrix[*ind][j] == 1) {
+	  nei += indexMap.at(j) + " ";
+	}	
+      }
+      //cout << nei << endl;
+      nei = nei.substr(0, nei.length());
+      graph.push_back(nei);
+      nei = "";
+    }
+
+    string tmp = "";
+    for (std::vector<string>::iterator it = graph.begin(); it != graph.end(); it++) {
+      tmp += *it;
+      if (it != graph.end() - 1) {
+	tmp += ",";
+      }
+      
+    }
+    char tmp_char[MAXDATASIZE];
+    strcpy(tmp_char, tmp.c_str());
+    cout << tmp_char << endl;
     
-    
-    
-    
+    if (sendto(sockfd_serverT, tmp_char, sizeof(tmp_char), 0, (struct sockaddr *) &central_addr, sizeof(central_addr)) == FAIL_CODE) {
+      perror("[ERROR] ServerT failed to send data to Central Server.");
+      exit(1);
+    }
+   
   }
   
   close(sockfd_serverT);
