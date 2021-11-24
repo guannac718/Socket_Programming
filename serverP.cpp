@@ -26,27 +26,11 @@
 
 using namespace std;
 
-/**
- * serverA.cpp
- * A storage server, possesses a database file database.txt
- * in which attribute values regarding information of links
- * are stored
- *
-*/
-
-/**
- * Named Constants
- */
 #define LOCAL_HOST "127.0.0.1" // Host address
 #define serverP_UDP_PORT 23510 // Server P port number
 #define MAXDATASIZE 50000 // max number of bytes we can get at once
 #define FAIL_CODE -1
-//#define edgeNum
 
-
-/**
- * Defined global variables
- */
 string namestr;
 int sockfd_serverP;
 struct sockaddr_in serverP_addr, central_addr;
@@ -62,18 +46,10 @@ bool seenA;
 bool seenB;
 
 
-
-/**
- * Defined functions
- */
-                       
-// 1. Create UDP socket
 void create_socket();
 
-// 2. Initialize connection with AWS server
 void init_central_connection();
 
-// 3. Bind a socket
 void bind_socket();
 
 float cal_cost(int one, int two);
@@ -87,49 +63,23 @@ void printPath(int parent[], int j);
 void printSolution(float dist[], int n, int parent[], int dest);
 
 
-// 4. Receive data from AWS
-
-// 5. Write the data into database (database.txt)
-
-// 6. Search request data and send result to AWS server
-
-/*
-struct graph {
-  int adjmatrix[edgeNum][edgeNum];
-
-  void dijkstra(int graph[edgeNum][edgeNum]);
-}
-*/
-  
-/**
- * Step 1: Create server A UDP sockect
- */
 void create_socket() {
-  sockfd_serverP = socket(AF_INET, SOCK_DGRAM, 0); // Create a UDP socket
+  sockfd_serverP = socket(AF_INET, SOCK_DGRAM, 0); 
   if (sockfd_serverP == FAIL_CODE) {
       perror("[ERROR] serverP failed to create socket");
       exit(1);
   }
 }
 
-/**
- * Step 2: Create sockaddr_in struct
- */
-
 void init_central_connection() {
 
-    // Server A side information
-    // Initialize server A IP address, port number
-    memset(&serverP_addr, 0, sizeof(serverP_addr)); //  make sure the struct is empty
-    serverP_addr.sin_family = AF_INET; // Use IPv4 address family
-    serverP_addr.sin_addr.s_addr = inet_addr(LOCAL_HOST); // Host IP address
-    serverP_addr.sin_port = htons(serverP_UDP_PORT); // Server A port number
+    memset(&serverP_addr, 0, sizeof(serverP_addr));
+    serverP_addr.sin_family = AF_INET; 
+    serverP_addr.sin_addr.s_addr = inet_addr(LOCAL_HOST);
+    serverP_addr.sin_port = htons(serverP_UDP_PORT);
 }
 
 
-/**
- * Step 3: Bind socket with specified IP address and port number
- */
 void bind_socket() {
   if (::bind(sockfd_serverP, (struct sockaddr *) &serverP_addr, sizeof(serverP_addr)) == FAIL_CODE) {
     
@@ -145,6 +95,7 @@ float cal_cost(int one, int two) {
   return (1.0 * abs(one - two)) / (1.0 * (one + two));
 }
 
+// GeeksForGeeks Dijkstra's algorithm with min path
 void dijkstra(vector<vector<float> > graph, int src, int dest) {
   float dist[verNum];
   bool sptSet[verNum];
@@ -187,7 +138,6 @@ void printPath(int parent[], int j) {
   }
   printPath(parent, parent[j]);
   res += indexMap.at(j) + " ";
-  //printf("%s ", indexMap.at(j).c_str());
 }
 
 void printSolution(float dist[], int n, int parent[], int dest) {
@@ -195,7 +145,6 @@ void printSolution(float dist[], int n, int parent[], int dest) {
   for (int i = 1; i < 2; i++) {
     res += indexMap.at(src);
     res += " ";
-    //printf("%s ", indexMap.at(src).c_str());
     printPath(parent, dest);
        
   }
@@ -204,17 +153,11 @@ void printSolution(float dist[], int n, int parent[], int dest) {
   ssc << dist[dest];
   cost = ssc.str();
   res += "," + cost;
-  //cout << "res is " << res.c_str() << endl;
-  //printf("%.2f\n", dist[dest]);
-
 }
 
 
 int main() {
 
-  //char rec_buffer[MAXDATASIZE]; 
-  //char result[MAXDATASIZE];
- 
 
   setvbuf(stdout, NULL, _IONBF, 0);
   create_socket();
@@ -242,7 +185,6 @@ int main() {
       exit(1);
     }
 
-    //cout << "rec_buffer is " << rec_buffer << endl;
     printf("The ServerP received the topology and score information. \n");
 
     // Split received data into graph and scores
@@ -262,16 +204,12 @@ int main() {
 	if (inputs[i] == ',') {
 	  name1 = name2;
           name2 = "";
-	  //cout << "name is " << name << endl;
 	} else if (i == inputs.length() - 1) {
           name2 += inputs[i];
-	  //cout << "score is " << word << endl;
 	} else {
           name2 = name2 + inputs[i];
 	}
     }
-    //cout << "name 1 is " << name1 << endl;
-    //cout << "name 2 is " << name2 << endl;
     string remaining = namesvec[1];
     vector<string> inputvec;
     istringstream tmp(remaining);
@@ -284,15 +222,14 @@ int main() {
     string names = inputvec[0];
     string scores = inputvec[1];
     scores = scores.substr(0, scores.length() - 1);
-    //cout << "names are " << names << endl;
-    //cout << "scores are " << scores << endl;
+
     
     // Build scores map
     map<string, int> scoreMap;
     std::string scorepair;
     istringstream sss(scores);
     while (std::getline(sss, scorepair, ',')) {
-      //cout << "scorepair is " << scorepair << endl;
+
       string word = "";
       string name = "";
       if (!scorepair.empty()) {
@@ -300,14 +237,14 @@ int main() {
 	  if (scorepair[i] == ' ') {
 	    name = word;
 	    word = "";
-	    //cout << "name is " << name << endl;
+
 	  } else if (i == scorepair.length() - 1) {
 	    word += scorepair[i];
-	    //cout << "score is " << word << endl;
+
 	    int tmp;
 	    stringstream ssword(word);
 	    ssword >> tmp;
-	    //cout << "name and score is "  << name << word << endl;
+
 	    scoreMap.insert(std::pair<string, int>(name, tmp));
 	  } else {
 	    word = word + scorepair[i];
@@ -318,7 +255,6 @@ int main() {
     }
     seenA = scoreMap.count(name1) == 1;
     seenB = scoreMap.count(name2) == 1;
-    //cout << "running bfs" << endl;
     if (!seenA || !seenB) {
        char error_char[MAXDATASIZE];
        string e = "";
@@ -330,14 +266,14 @@ int main() {
        }
     }
     else {
-      //cout << "running bfs" << endl;
+
        // Build graph 
     float adjmatrix[1000][1000];
     int index = 0;
     istringstream ssm(names);
     std::string relation;
     while (std::getline(ssm, relation, ',')) {
-      //cout << "relation is " << relation << endl;
+
       if (!relation.empty()) {
 	size_t start;
 	size_t end = 0;
@@ -364,16 +300,15 @@ int main() {
 	    word += relation[i];
 	  }
 	}
-	//cout << scoreMap.at(prevWord) << " ";
-	//cout << scoreMap.at(word) << endl;
+
 	float cost = cal_cost(scoreMap.at(prevWord), scoreMap.at(word));
-	//cout << prevWord << " " << word << ":" << cost << endl;
+
 	adjmatrix[nameMap.at(prevWord)][nameMap.at(word)] = cost;
 	adjmatrix[nameMap.at(word)][nameMap.at(prevWord)] = cost;
       }
       verNum++;   
     }
-    //cout << "running bfs" << endl;
+
 
     vector<vector<float> > graph;
     for (int i = 0; i < verNum; i++) {
@@ -381,15 +316,14 @@ int main() {
       for (int j = 0; j < verNum; j++) {
 	cur.push_back(adjmatrix[i][j]);
       }
-      //cout << i << endl;
+  
       graph.push_back(cur);
     }
     
-    //cout << "running bfs" << endl;
+ 
 
     dijkstra(graph, nameMap.at(name1), nameMap.at(name2));
 
-    //cout << "running bfs" << endl;
     
     char tmp_char[MAXDATASIZE];
     strcpy(tmp_char, res.c_str());

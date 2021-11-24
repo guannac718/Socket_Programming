@@ -108,7 +108,6 @@ void create_UDP_socket() {
       
   }
 
-  //printf("Successfully created UDP socket. \n");
 }
 
 void listen_clientA() {
@@ -130,7 +129,6 @@ void init_connection_serverT() {
   dest_serverT_addr.sin_family = AF_INET;
   dest_serverT_addr.sin_addr.s_addr = inet_addr(LOCAL_HOST);
   dest_serverT_addr.sin_port = htons(serverT_PORT);
-  //printf("Started connection w/ server T. \n");
 }
 
 void init_connection_serverS() {
@@ -138,7 +136,6 @@ void init_connection_serverS() {
   dest_serverS_addr.sin_family = AF_INET;
   dest_serverS_addr.sin_addr.s_addr = inet_addr(LOCAL_HOST);
   dest_serverS_addr.sin_port = htons(serverS_PORT);
-  //printf("Started connection w/ server S. \n");
 }
 
 void init_connection_serverP() {
@@ -146,12 +143,9 @@ void init_connection_serverP() {
   dest_serverP_addr.sin_family = AF_INET;
   dest_serverP_addr.sin_addr.s_addr = inet_addr(LOCAL_HOST);
   dest_serverP_addr.sin_port = htons(serverP_PORT);
-  //printf("Started connection w/ server P. \n");
 }
 
 int main() {
-
-  
   
   create_clientA_TCP_socket();
   create_clientB_TCP_socket();
@@ -169,7 +163,8 @@ int main() {
     string nameB;
     char inputA_buf[MAXDATASIZE];
     char inputB_buf[MAXDATASIZE];
-    
+
+    // Receiving from clients
     socklen_t clientA_addr_size = sizeof(dest_clientA_addr);
     child_sockfd_clientA = ::accept(sockfd_clientA_TCP, (struct sockaddr *) &dest_clientA_addr, &clientA_addr_size);
     if (child_sockfd_clientA == FAIL) {
@@ -186,9 +181,7 @@ int main() {
     strncpy(dataA_buffer, inputA_buf, strlen(inputA_buf));
     nameA = strtok(inputA_buf, " ");
     printf("The Central server received input=\"%s\" from the client using TCP over port %d. \n", nameA.c_str(), Central_clientA_TCP_PORT);
-    
-
-    
+     
     socklen_t clientB_addr_size = sizeof(dest_clientB_addr);
     child_sockfd_clientB = ::accept(sockfd_clientB_TCP, (struct sockaddr *) &dest_clientB_addr, &clientB_addr_size);
     if (child_sockfd_clientB == FAIL) {
@@ -206,7 +199,7 @@ int main() {
     nameB = strtok(inputB_buf, " ");
     printf("The Central server received input=\"%s\" from the client using TCP over port %d \n", nameB.c_str(), Central_clientB_TCP_PORT);
     
-    
+    // Connecting with serverT
     init_connection_serverT();
     char namestr[MAXDATASIZE];
     string str;
@@ -214,10 +207,7 @@ int main() {
     str.append(inputA_buf);
     str.append(",");
     str.append(inputB_buf);
-    //cout << "str is " << str << endl;
     strcpy(namestr, str.c_str());
-    //printf("The Central server sent data to ServerT. \n");
-    //cout << namestr << endl;
     
     if (sendto(sockfd_UDP, namestr, sizeof(namestr), 0, (struct sockaddr *) &dest_serverT_addr, sizeof(dest_serverT_addr)) == FAIL) {
       perror("[ERROR] Central server failed to send data to ServerT.");
@@ -225,7 +215,6 @@ int main() {
     }
     
     printf("The Central server sent a request to Backend-Server T. \n");
-
 
     // Receiving data from ServerT
     vector<string> rec_graph;
@@ -238,7 +227,6 @@ int main() {
 
     printf("The Central server received information from Backend-Server T using UDP over port %d. \n", Central_UDP_PORT);
 
-    //cout << graph_buffer << endl;
 
     init_connection_serverS();
     // Sending names to ServerS to get the scores
@@ -256,7 +244,6 @@ int main() {
       exit(1);
     }
     printf("The Central server received information from Backend-Server S using UDP over port %d. \n", Central_UDP_PORT);
-    //cout << score_buffer << endl;
 
     // Sending graph and scores to serverP
     
@@ -266,7 +253,6 @@ int main() {
     strcat(graph_scores, graph_buffer);
     strcat(graph_scores, ".");
     strcat(graph_scores, score_buffer);
-    //cout << graph_scores << endl;
 
     init_connection_serverP();
     if (sendto(sockfd_UDP, graph_scores, sizeof(graph_scores), 0, (struct sockaddr *) &dest_serverP_addr, sizeof(dest_serverP_addr)) == FAIL) {
@@ -282,7 +268,6 @@ int main() {
     }
     printf("The Central server received the results from backend server P. \n");
 
-    //cout << final_res << endl;
     if (string(final_res) == "") {
       string errorstr = "";
       char errorchar[MAXDATASIZE];
