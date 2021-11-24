@@ -15,6 +15,7 @@
 #include <set>
 #include <sys/socket.h>
 #include <algorithm>
+#include <climits>
 #include <arpa/inet.h>
 #include <sys/wait.h>
 #include <string>
@@ -162,7 +163,7 @@ void dijkstra(vector<vector<float> > graph, int src, int dest) {
     int u = minDistance(dist, sptSet);
     sptSet[u] = true;
     for (int v = 0; v < verNum; v++) {
-      if (!sptSet[v] && graph[u][v] && dist[u] + graph[u][v] < dist[v]) {
+      if (!sptSet[v] && graph[u][v] && dist[u] + graph[u][v] > 0 && dist[u] + graph[u][v] < INT_MAX && dist[u] + graph[u][v] < dist[v]) {
 	parent[v] = u;
 	dist[v] = dist[u] + graph[u][v];
       }

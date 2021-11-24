@@ -21,7 +21,7 @@ using namespace std;
 #define Central_UDP_PORT 24510
 #define FAIL -1
 #define BACKLOG 10
-#define MAXDATASIZE 20000
+#define MAXDATASIZE 50000
 #define serverT_PORT 21510
 #define serverS_PORT 22510
 #define serverP_PORT 23510

@@ -34,7 +34,7 @@ using namespace std;
  */
 #define LOCAL_HOST "127.0.0.1" // Host address
 #define serverS_UDP_PORT 22510 // Server T port number
-#define MAXDATASIZE 20000 // max number of bytes we can get at once
+#define MAXDATASIZE 50000 // max number of bytes we can get at once
 #define FAIL_CODE -1
 
 
