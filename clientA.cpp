@@ -87,6 +87,7 @@ void request_central_server_connection() {
   connect(sockfd_client_TCP, (struct sockaddr *) &central_addr, sizeof(central_addr));
 
   printf("The client is up and running \n");
+  cout << endl;
 }
 
 int main(int argc, char *argv[]) {

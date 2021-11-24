@@ -21,7 +21,7 @@ using namespace std;
 #define Central_UDP_PORT 24510
 #define FAIL -1
 #define BACKLOG 10
-#define MAXDATASIZE 1024
+#define MAXDATASIZE 20000
 #define serverT_PORT 21510
 #define serverS_PORT 22510
 #define serverP_PORT 23510
@@ -161,7 +161,7 @@ int main() {
 
   create_UDP_socket();
   
-  printf("The central server is up and running \n");
+  printf("The Central server is up and running \n");
 
 
   while (1) {
@@ -181,7 +181,7 @@ int main() {
     char dataA_buffer[MAXDATASIZE];
     strncpy(dataA_buffer, inputA_buf, strlen(inputA_buf));
     nameA = strtok(inputA_buf, " ");
-    printf("The Central server received input=\"%s\" from the client using TCP over port %d \n", nameA.c_str(), Central_clientA_TCP_PORT);
+    printf("The Central server received input=\"%s\" from the client using TCP over port %d. \n", nameA.c_str(), Central_clientA_TCP_PORT);
     
 
     
@@ -220,7 +220,7 @@ int main() {
       exit(1);
     }
     
-    //printf("The Central server sent data to ServerT.");
+    printf("The Central server sent a request to Backend-Server T. \n");
 
 
     // Receiving data from ServerT
@@ -232,6 +232,8 @@ int main() {
       exit(1);
     }
 
+    printf("The Central server received information from Backend-Server T using UDP over port %d. \n", Central_UDP_PORT);
+
     //cout << graph_buffer << endl;
 
     init_connection_serverS();
@@ -240,6 +242,7 @@ int main() {
       perror("[ERROR] Central server failed to send data to ServerS.");
       exit(1);
     }
+     printf("The Central server sent a request to Backend-Server S. \n");
 
      // Receiving scores from serverS
     char score_buffer[MAXDATASIZE];
@@ -248,6 +251,7 @@ int main() {
       perror("[ERROR] Central server failed to receive data from ServerS.");
       exit(1);
     }
+    printf("The Central server received information from Backend-Server S using UDP over port %d. \n", Central_UDP_PORT);
     //cout << score_buffer << endl;
 
     // Sending graph and scores to serverP
@@ -265,15 +269,16 @@ int main() {
       perror("[ERROR] Central server failed to send data to ServerP.");
       exit(1);
     }
-
+    printf("The Central server sent a processing request to Backend-Server P. \n");
     char final_res[MAXDATASIZE];
     central_addr_size = sizeof(dest_serverP_addr);
     if (::recvfrom(sockfd_UDP, final_res, sizeof(final_res), 0, (struct sockaddr *) &dest_serverP_addr, &central_addr_size) == FAIL) {
       perror("[ERROR] Central server failed to receive data from ServerP.");
       exit(1);
     }
+    printf("The Central server received the results from backend server P. \n");
 
-    cout << final_res << endl;
+    //cout << final_res << endl;
     if (string(final_res) == "") {
       string errorstr = "";
       char errorchar[MAXDATASIZE];
@@ -303,6 +308,8 @@ int main() {
       }
     }
 
+    printf("The Central server sent the results to client A. \n");
+    printf("The Central server sent the results to client B. \n");
   }
   
 

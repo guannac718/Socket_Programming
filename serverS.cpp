@@ -34,7 +34,7 @@ using namespace std;
  */
 #define LOCAL_HOST "127.0.0.1" // Host address
 #define serverS_UDP_PORT 22510 // Server T port number
-#define MAXDATASIZE 1024 // max number of bytes we can get at once
+#define MAXDATASIZE 20000 // max number of bytes we can get at once
 #define FAIL_CODE -1
 
 
@@ -109,7 +109,7 @@ void bind_socket() {
   }
     
 
-    printf("The Server S is up and running using UDP on port %d. \n", serverS_UDP_PORT);
+    printf("The ServerS is up and running using UDP on port %d. \n", serverS_UDP_PORT);
 }
 
 
@@ -134,7 +134,7 @@ int main() {
     char name_buffer[MAXDATASIZE];
     //strncpy(name_buffer, rec_buffer, strlen(rec_buffer));
     //namestr = strtok(rec_buffer, " ");
-    printf("ServerS received a request from Central to get the topology \n");
+    printf("The ServerS received a request from Central to get the scores. \n");
 
     // Split received data into two names
     
@@ -149,7 +149,7 @@ int main() {
     while (scoreInput.eof() != true) {
       std::string line;
       std::getline(scoreInput, line);
-      cout << line << endl;
+      //cout << line << endl;
       if (!line.empty()) {
 	 size_t start;
 	 size_t end= 0;
@@ -190,7 +190,7 @@ int main() {
     */
 
     // Split names sent from Central to ServerS
-    cout << rec_buffer << endl;
+    //cout << rec_buffer << endl;
     //std:: unordered_set<std::string> nameSet;
     std:: string input(rec_buffer);
     size_t start;
@@ -210,7 +210,7 @@ int main() {
     
     }
 
-    cout << "res is " << res << endl;
+    //cout << "res is " << res << endl;
 
     /*
     for ( it = nameSet.begin(); it != nameSet.end(); ++it) {
@@ -220,12 +220,13 @@ int main() {
     
     char tmp_char[MAXDATASIZE];
     strcpy(tmp_char, res.c_str());
-    cout << "tmp_char is " << tmp_char << endl;
+    //cout << "tmp_char is " << tmp_char << endl;
     
     if (sendto(sockfd_serverS, tmp_char, sizeof(tmp_char), 0, (struct sockaddr *) &central_addr, sizeof(central_addr)) == FAIL_CODE) {
       perror("[ERROR] ServerS failed to send data to Central Server.");
       exit(1);
     }
+    printf("The ServerS finished sending the scores to Central. \n");
     
    
   }

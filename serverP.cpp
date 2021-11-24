@@ -38,7 +38,7 @@ using namespace std;
  */
 #define LOCAL_HOST "127.0.0.1" // Host address
 #define serverP_UDP_PORT 23510 // Server P port number
-#define MAXDATASIZE 1024 // max number of bytes we can get at once
+#define MAXDATASIZE 50000 // max number of bytes we can get at once
 #define FAIL_CODE -1
 //#define edgeNum
 
@@ -140,7 +140,7 @@ void bind_socket() {
   }
     
 
-    printf("The Server P is up and running using UDP on port %d. \n", serverP_UDP_PORT);
+    printf("The ServerP is up and running using UDP on port %d. \n", serverP_UDP_PORT);
 }
 
 float cal_cost(int one, int two) {
@@ -232,7 +232,7 @@ int main() {
     }
 
     //cout << "rec_buffer is " << rec_buffer << endl;
-    printf("ServerT received a request from Central to get the topology \n");
+    printf("The ServerP received the topology and score information. \n");
 
     // Split received data into graph and scores
     vector<string> namesvec;
@@ -381,6 +381,7 @@ int main() {
       perror("[ERROR] ServerP failed to send data to Central Server.");
       exit(1);
     }
+    printf("The ServerP finished sending the results to the Central. \n");
     }
   }
   

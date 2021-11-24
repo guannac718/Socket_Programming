@@ -35,7 +35,7 @@ using namespace std;
  */
 #define LOCAL_HOST "127.0.0.1" // Host address
 #define serverT_UDP_PORT 21510 // Server T port number
-#define MAXDATASIZE 1024 // max number of bytes we can get at once
+#define MAXDATASIZE 50000 // max number of bytes we can get at once
 #define FAIL_CODE -1
 
 
@@ -79,7 +79,7 @@ void bind_socket();
 void create_socket() {
   sockfd_serverT = socket(AF_INET, SOCK_DGRAM, 0); // Create a UDP socket
   if (sockfd_serverT == FAIL_CODE) {
-      perror("[ERROR] serverT failed to create socket");
+      perror("[ERROR] serverT failed to create socket. \n");
       exit(1);
   }
 }
@@ -110,7 +110,7 @@ void bind_socket() {
   }
     
 
-    printf("The Server T is up and running using UDP on port %d. \n", serverT_UDP_PORT);
+  printf("The ServerT is up and running using UDP on port %d. \n", serverT_UDP_PORT);
 }
 
 
@@ -135,7 +135,7 @@ int main() {
     char name_buffer[MAXDATASIZE];
     strncpy(name_buffer, rec_buffer, strlen(rec_buffer));
     namestr = strtok(rec_buffer, " ");
-    printf("ServerT received a request from Central to get the topology \n");
+    printf("The ServerT received a request from Central to get the topology. \n");
 
     // Split received data into two names
     vector<string> names;
@@ -281,12 +281,13 @@ int main() {
     
     char tmp_char[MAXDATASIZE];
     strcpy(tmp_char, tmp.c_str());
-    cout << tmp_char << endl;
+    //cout << tmp_char << endl;
     
     if (sendto(sockfd_serverT, tmp_char, sizeof(tmp_char), 0, (struct sockaddr *) &central_addr, sizeof(central_addr)) == FAIL_CODE) {
       perror("[ERROR] ServerT failed to send data to Central Server.");
       exit(1);
     }
+    printf("The ServerT finished sending the topology to Central. \n");
    
   }
   
