@@ -34,10 +34,7 @@ int child_sockfd_clientA;
 int child_sockfd_clientB;
 struct sockaddr_in central_clientA_addr, central_clientB_addr, central_UDP_addr;
 struct sockaddr_in dest_clientA_addr, dest_clientB_addr, dest_serverT_addr, dest_serverS_addr, dest_serverP_addr;
-string nameA;
-string nameB;
-char inputA_buf[MAXDATASIZE];
-char inputB_buf[MAXDATASIZE];
+
 
 void create_clientA_TCP_socket();
 
@@ -154,6 +151,8 @@ void init_connection_serverP() {
 
 int main() {
 
+  
+  
   create_clientA_TCP_socket();
   create_clientB_TCP_socket();
   listen_clientA();
@@ -165,6 +164,11 @@ int main() {
 
 
   while (1) {
+
+    string nameA;
+    string nameB;
+    char inputA_buf[MAXDATASIZE];
+    char inputB_buf[MAXDATASIZE];
     
     socklen_t clientA_addr_size = sizeof(dest_clientA_addr);
     child_sockfd_clientA = ::accept(sockfd_clientA_TCP, (struct sockaddr *) &dest_clientA_addr, &clientA_addr_size);

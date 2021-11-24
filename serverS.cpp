@@ -48,8 +48,7 @@ struct sockaddr_in serverS_addr, central_addr;
 fstream database;
 int link_num = 0;
 
-char rec_buffer[MAXDATASIZE]; 
-char result[MAXDATASIZE]; 
+
 
 
 
@@ -115,6 +114,8 @@ void bind_socket() {
 
 int main() {
 
+  
+
   create_socket();
     
   init_central_connection();
@@ -123,6 +124,9 @@ int main() {
 
   
   while (true) {
+
+    char rec_buffer[MAXDATASIZE]; 
+    char result[MAXDATASIZE]; 
 
     // Receive data from Central server
     socklen_t central_addr_size = sizeof(central_addr);

@@ -52,17 +52,14 @@ int sockfd_serverP;
 struct sockaddr_in serverP_addr, central_addr;
 
 fstream database;
-int link_num = 0;
-int verNum;
-
-char rec_buffer[MAXDATASIZE]; 
-char result[MAXDATASIZE];
-string res;
+int verNum = 0;
+string res = "";
 map<string, int> nameMap;
 map<int, string> indexMap;
+char rec_buffer[MAXDATASIZE]; 
+char result[MAXDATASIZE];
 bool seenA;
 bool seenB;
-
 
 
 
@@ -215,6 +212,10 @@ void printSolution(float dist[], int n, int parent[], int dest) {
 
 int main() {
 
+  //char rec_buffer[MAXDATASIZE]; 
+  //char result[MAXDATASIZE];
+ 
+
   setvbuf(stdout, NULL, _IONBF, 0);
   create_socket();
     
@@ -224,6 +225,15 @@ int main() {
 
   
   while (true) {
+
+     memset(rec_buffer, 0, sizeof(rec_buffer));
+     memset(result, 0, sizeof(result));
+     res = "";
+     verNum = 0;
+     nameMap.clear();
+     indexMap.clear();
+     seenA = false;
+     seenB = false;
 
     // Receive data from Central server
     socklen_t central_addr_size = sizeof(central_addr);
@@ -308,6 +318,7 @@ int main() {
     }
     seenA = scoreMap.count(name1) == 1;
     seenB = scoreMap.count(name2) == 1;
+    //cout << "running bfs" << endl;
     if (!seenA || !seenB) {
        char error_char[MAXDATASIZE];
        string e = "";
@@ -319,6 +330,7 @@ int main() {
        }
     }
     else {
+      //cout << "running bfs" << endl;
        // Build graph 
     float adjmatrix[1000][1000];
     int index = 0;
@@ -361,6 +373,7 @@ int main() {
       }
       verNum++;   
     }
+    //cout << "running bfs" << endl;
 
     vector<vector<float> > graph;
     for (int i = 0; i < verNum; i++) {
@@ -368,15 +381,19 @@ int main() {
       for (int j = 0; j < verNum; j++) {
 	cur.push_back(adjmatrix[i][j]);
       }
+      //cout << i << endl;
       graph.push_back(cur);
     }
+    
+    //cout << "running bfs" << endl;
 
     dijkstra(graph, nameMap.at(name1), nameMap.at(name2));
-    
+
+    //cout << "running bfs" << endl;
     
     char tmp_char[MAXDATASIZE];
     strcpy(tmp_char, res.c_str());
-    //cout << tmp_char << endl;
+    cout << "ready to send " << tmp_char << endl;
     
     if (sendto(sockfd_serverP, tmp_char, sizeof(tmp_char), 0, (struct sockaddr *) &central_addr, sizeof(central_addr)) == FAIL_CODE) {
       perror("[ERROR] ServerP failed to send data to Central Server.");
