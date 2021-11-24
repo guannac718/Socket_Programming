@@ -141,7 +141,7 @@ void init_connection_serverS() {
   dest_serverS_addr.sin_family = AF_INET;
   dest_serverS_addr.sin_addr.s_addr = inet_addr(LOCAL_HOST);
   dest_serverS_addr.sin_port = htons(serverS_PORT);
-  printf("Started connection w/ server S. \n");
+  //printf("Started connection w/ server S. \n");
 }
 
 void init_connection_serverP() {
@@ -149,7 +149,7 @@ void init_connection_serverP() {
   dest_serverP_addr.sin_family = AF_INET;
   dest_serverP_addr.sin_addr.s_addr = inet_addr(LOCAL_HOST);
   dest_serverP_addr.sin_port = htons(serverP_PORT);
-  printf("Started connection w/ server P. \n");
+  //printf("Started connection w/ server P. \n");
 }
 
 int main() {
@@ -232,7 +232,7 @@ int main() {
       exit(1);
     }
 
-    cout << graph_buffer << endl;
+    //cout << graph_buffer << endl;
 
     init_connection_serverS();
     // Sending names to ServerS to get the scores
@@ -258,13 +258,33 @@ int main() {
     strcat(graph_scores, graph_buffer);
     strcat(graph_scores, ".");
     strcat(graph_scores, score_buffer);
-    cout << graph_scores << endl;
+    //cout << graph_scores << endl;
 
     init_connection_serverP();
     if (sendto(sockfd_UDP, graph_scores, sizeof(graph_scores), 0, (struct sockaddr *) &dest_serverP_addr, sizeof(dest_serverP_addr)) == FAIL) {
       perror("[ERROR] Central server failed to send data to ServerP.");
       exit(1);
     }
+
+    char final_res[MAXDATASIZE];
+    central_addr_size = sizeof(dest_serverP_addr);
+    if (::recvfrom(sockfd_UDP, final_res, sizeof(final_res), 0, (struct sockaddr *) &dest_serverP_addr, &central_addr_size) == FAIL) {
+      perror("[ERROR] Central server failed to receive data from ServerP.");
+      exit(1);
+    }
+
+    cout << final_res << endl;
+
+    if (sendto(child_sockfd_clientA, final_res, sizeof(final_res), 0, (struct sockaddr *) &dest_clientA_addr, sizeof(dest_clientA_addr)) == FAIL) {
+      perror("[ERROR]: Central server failed to send result to client A.");
+      exit(1);
+    }
+    if (sendto(child_sockfd_clientB, final_res, sizeof(final_res), 0, (struct sockaddr *) &dest_clientB_addr, sizeof(dest_clientB_addr)) == FAIL) {
+      perror("[ERROR]: Central server failed to send result to client B.");
+      exit(1);
+    }
+    
+    
   }
   
 

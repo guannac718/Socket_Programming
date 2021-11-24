@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <sstream>
 #include <arpa/inet.h>
 #include <sys/wait.h>
 #include <iostream>
@@ -45,7 +46,7 @@ int sockfd_client_TCP; // Client socket
 struct sockaddr_in central_addr; // Central server address
 
 char write_buf[MAXDATASIZE]; // Store input to write (send to AWS)
-//char compute_buf[MAXDATASIZE]; // Store input to compute (send to AWS)
+char final_res[MAXDATASIZE]; // Store input to compute (send to AWS)
 char write_result[MAXDATASIZE]; // Write result from AWS
 //char compute_result[MAXDATASIZE]; // Compute result from AWS
 
@@ -103,6 +104,61 @@ int main(int argc, char *argv[]) {
   }
   printf("The client sent %s to the Central server \n", write_buf);
 
+  
+  if (recv(sockfd_client_TCP, final_res, sizeof(final_res), 0) == FAIL) {
+    perror("[ERROR] Client A failed to receive result from the Central server.");
+    exit(1);
+  }
+
+  //cout << "Final res is " << final_res << endl;
+  string res(final_res);
+  string names = "";
+  string cost = "";
+  for (int i = 0; i < res.length(); i++) {
+    if (res[i] == ',') {
+      names = cost;
+      cost = "";
+    } else if (i == res.length() - 1) {
+      cost = cost + res[i];
+    } else {
+      cost += res[i];
+    }
+  }
+
+  cout << "names are " << names.c_str() << endl;
+  cout << "cost is " << cost.c_str() << endl;
+
+  vector<string> path;
+  size_t start;
+  size_t end = 0;
+  while ((start = names.find_first_not_of(" ", end)) != string::npos) {
+    end = names.find(" ", start);
+    string name = names.substr(start, end - start);
+    path.push_back(name);
+  }
+
+  float gap;
+  stringstream ssc(cost);
+  ssc >> gap;
+  
+
+  string name1 = path[0];
+  string name2 = path[path.size() - 1];
+
+  cout << "Found compatibility for " << name1.c_str() << " and " << name2.c_str() << ":" << endl;
+  for (int i = 0; i < path.size(); i++) {
+    cout << path[i].c_str();
+    if (i != path.size() - 1) {
+      cout << " --- ";
+    }
+  }
+  cout << endl;
+  printf("Compatibility score: %.2f \n", gap); 
+
+
+
+
+  
   close(sockfd_client_TCP);
   return 0;
 }
