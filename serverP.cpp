@@ -59,6 +59,8 @@ char result[MAXDATASIZE];
 string res;
 map<string, int> nameMap;
 map<int, string> indexMap;
+bool seenA;
+bool seenB;
 
 
 
@@ -187,17 +189,12 @@ void printPath(int parent[], int j) {
   }
   printPath(parent, parent[j]);
   res += indexMap.at(j) + " ";
-  printf("%s ", indexMap.at(j).c_str());
+  //printf("%s ", indexMap.at(j).c_str());
 }
 
 void printSolution(float dist[], int n, int parent[], int dest) {
   int src = 0;
-  //printf("Vertex\t Distance\tPath");
-  //cout << "verNum is " << verNum << endl;
-  //cout << dest << endl;
   for (int i = 1; i < 2; i++) {
-    //if (i == dest) {
-    //printf("\n%d -> %d \t\t %f\t\t%d ", src, i, dist[i], src);
     res += indexMap.at(src);
     res += " ";
     //printf("%s ", indexMap.at(src).c_str());
@@ -209,7 +206,7 @@ void printSolution(float dist[], int n, int parent[], int dest) {
   ssc << dist[dest];
   cost = ssc.str();
   res += "," + cost;
-  cout << res.c_str() << endl;
+  //cout << "res is " << res.c_str() << endl;
   //printf("%.2f\n", dist[dest]);
 
 }
@@ -308,18 +305,21 @@ int main() {
       }
       
     }
-
-    /*
-    for (map<string, int>::iterator it = scoreMap.begin(); it != scoreMap.end(); ++it) {
-      cout << it->first << ":" << it->second << endl;
-    }
-    */
+    seenA = scoreMap.count(name1) == 1;
+    seenB = scoreMap.count(name2) == 1;
+    if (!seenA || !seenB) {
+       char error_char[MAXDATASIZE];
+       string e = "";
+       strcpy(error_char, e.c_str());
     
-
-    // Build graph 
+       if (sendto(sockfd_serverP, error_char, sizeof(error_char), 0, (struct sockaddr *) &central_addr, sizeof(central_addr)) == FAIL_CODE) {
+	 perror("[ERROR] ServerP failed to send data to Central Server.");
+	 exit(1);
+       }
+    }
+    else {
+       // Build graph 
     float adjmatrix[1000][1000];
-    //map<string, int> nameMap;
-    //map<int, string> indexMap;
     int index = 0;
     istringstream ssm(names);
     std::string relation;
@@ -358,33 +358,8 @@ int main() {
 	adjmatrix[nameMap.at(prevWord)][nameMap.at(word)] = cost;
 	adjmatrix[nameMap.at(word)][nameMap.at(prevWord)] = cost;
       }
-      verNum++;
-     
-      
+      verNum++;   
     }
-
-    //verNum = nameMap.size();
-    //cout << "nameMap: " << endl;
-
-    /*
-    for (map<string, int>::iterator it = nameMap.begin(); it != nameMap.end(); ++it) {
-      cout << it->first << ":" << it->second << endl;
-    }
-    
-    cout << "indexMap: " << endl;
-    for (map<int, string>::iterator it = indexMap.begin(); it != indexMap.end(); ++it) {
-      cout << it->first << ":" << it->second << endl;
-    }
-    
-    
-    for (int i = 0; i < verNum; i++) {
-      for (int j = 0; j < verNum; j++) {
-	cout << adjmatrix[i][j] << ' ';
-      }
-      cout << endl;
-    }
-    
-    */
 
     vector<vector<float> > graph;
     for (int i = 0; i < verNum; i++) {
@@ -395,21 +370,18 @@ int main() {
       graph.push_back(cur);
     }
 
-    //cout << "start: " << nameMap.at(name1) << endl;
-    //cout << "end: " << nameMap.at(name2) << endl;
     dijkstra(graph, nameMap.at(name1), nameMap.at(name2));
     
-    /*
-    char tmp_char[MAXDATASIZE];
-    strcpy(tmp_char, tmp.c_str());
-    cout << tmp_char << endl;
     
-    if (sendto(sockfd_serverT, tmp_char, sizeof(tmp_char), 0, (struct sockaddr *) &central_addr, sizeof(central_addr)) == FAIL_CODE) {
-      perror("[ERROR] ServerT failed to send data to Central Server.");
+    char tmp_char[MAXDATASIZE];
+    strcpy(tmp_char, res.c_str());
+    //cout << tmp_char << endl;
+    
+    if (sendto(sockfd_serverP, tmp_char, sizeof(tmp_char), 0, (struct sockaddr *) &central_addr, sizeof(central_addr)) == FAIL_CODE) {
+      perror("[ERROR] ServerP failed to send data to Central Server.");
       exit(1);
     }
-    */
-    
+    }
   }
   
   close(sockfd_serverP);

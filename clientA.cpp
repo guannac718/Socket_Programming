@@ -112,7 +112,19 @@ int main(int argc, char *argv[]) {
 
   //cout << "Final res is " << final_res << endl;
   string res(final_res);
-  string names = "";
+  if (final_res[0] == '!') {
+    res = res.substr(1, sizeof(res));
+    vector<string> epath;
+    size_t estart;
+    size_t eend = 0;
+    while ((estart = res.find_first_not_of(",", eend)) != string::npos) {
+      eend = res.find(",", estart);
+      string ename = res.substr(estart, eend - estart);
+      epath.push_back(ename);
+    }
+    cout << "Found no compatibility for " << epath[0] << " and " << epath[1] << endl;
+  } else {
+    string names = "";
   string cost = "";
   for (int i = 0; i < res.length(); i++) {
     if (res[i] == ',') {
@@ -153,7 +165,10 @@ int main(int argc, char *argv[]) {
     }
   }
   cout << endl;
-  printf("Compatibility score: %.2f \n", gap); 
+  printf("Compatibility score: %.2f \n", gap);
+  }
+  
+   
 
 
 

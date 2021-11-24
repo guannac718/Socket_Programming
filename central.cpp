@@ -274,17 +274,35 @@ int main() {
     }
 
     cout << final_res << endl;
+    if (string(final_res) == "") {
+      string errorstr = "";
+      char errorchar[MAXDATASIZE];
+      errorstr.append("!");
+      errorstr.append(inputA_buf);
+      errorstr.append(",");
+      errorstr.append(inputB_buf);
+  
+      strcpy(errorchar, errorstr.c_str());
 
-    if (sendto(child_sockfd_clientA, final_res, sizeof(final_res), 0, (struct sockaddr *) &dest_clientA_addr, sizeof(dest_clientA_addr)) == FAIL) {
-      perror("[ERROR]: Central server failed to send result to client A.");
-      exit(1);
+      if (sendto(child_sockfd_clientA, errorchar, sizeof(errorchar), 0, (struct sockaddr *) &dest_clientA_addr, sizeof(dest_clientA_addr)) == FAIL) {
+	perror("[ERROR]: Central server failed to send result to client A.");
+	exit(1);
+      }
+      if (sendto(child_sockfd_clientB, errorchar, sizeof(errorchar), 0, (struct sockaddr *) &dest_clientB_addr, sizeof(dest_clientB_addr)) == FAIL) {
+	perror("[ERROR]: Central server failed to send result to client B.");
+	exit(1);
+      }
+    } else {
+      if (sendto(child_sockfd_clientA, final_res, sizeof(final_res), 0, (struct sockaddr *) &dest_clientA_addr, sizeof(dest_clientA_addr)) == FAIL) {
+	perror("[ERROR]: Central server failed to send result to client A.");
+	exit(1);
+      }
+      if (sendto(child_sockfd_clientB, final_res, sizeof(final_res), 0, (struct sockaddr *) &dest_clientB_addr, sizeof(dest_clientB_addr)) == FAIL) {
+	perror("[ERROR]: Central server failed to send result to client B.");
+	exit(1);
+      }
     }
-    if (sendto(child_sockfd_clientB, final_res, sizeof(final_res), 0, (struct sockaddr *) &dest_clientB_addr, sizeof(dest_clientB_addr)) == FAIL) {
-      perror("[ERROR]: Central server failed to send result to client B.");
-      exit(1);
-    }
-    
-    
+
   }
   
 
