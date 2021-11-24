@@ -248,9 +248,21 @@ int main() {
       perror("[ERROR] Central server failed to receive data from ServerS.");
       exit(1);
     }
+    //cout << score_buffer << endl;
 
-    cout << score_buffer << endl;
+    // Sending graph and scores to serverP
     
+    char graph_scores[MAXDATASIZE];
+    strcpy(graph_scores, graph_buffer);
+    strcat(graph_scores, ".");
+    strcat(graph_scores, score_buffer);
+    cout << graph_scores << endl;
+
+    init_connection_serverP();
+    if (sendto(sockfd_UDP, graph_scores, sizeof(graph_scores), 0, (struct sockaddr *) &dest_serverP_addr, sizeof(dest_serverP_addr)) == FAIL) {
+      perror("[ERROR] Central server failed to send data to ServerP.");
+      exit(1);
+    }
   }
   
 
