@@ -130,28 +130,96 @@ int main() {
       exit(1);
     }
 
-    cout << rec_buffer << endl;
-
-    /*
-    char name_buffer[MAXDATASIZE];
-    strncpy(name_buffer, rec_buffer, strlen(rec_buffer));
-    namestr = strtok(rec_buffer, " ");
+    //cout << "rec_buffer is " << rec_buffer << endl;
     printf("ServerT received a request from Central to get the topology \n");
 
-    // Split received data into two names
-    vector<string> names;
-    std:: string input(name_buffer);
-    size_t start;
-    size_t end= 0;
-    while ((start = namestr.find_first_not_of(",", end)) != string::npos) {
-      end = namestr.find(",", start);
-      names.push_back(namestr.substr(start, end - start));
+    // Split received data into graph and scores
+    vector<string> namesvec;
+    string inputstr(rec_buffer);
+    istringstream iss(inputstr);
+    std::string token;
+    while (std::getline(iss, token, '.')) {
+      if (!token.empty()) {
+	namesvec.push_back(token);
+      }
     }
-    string name1 = names[0];
-    string name2 = names[1];
-    //cout << names[0] << endl;
-    //cout << names[1] << endl;
+    string names = namesvec[0];
+    string scores = namesvec[1];
+    scores = scores.substr(0, scores.length() - 1);
+    cout << "names are " << names << endl;
+    //cout << "scores are " << scores << endl;
+    
+    // Build scores map
+    map<string, int> scoreMap;
+    std::string scorepair;
+    istringstream sss(scores);
+    while (std::getline(sss, scorepair, ',')) {
+      //cout << "scorepair is " << scorepair << endl;
+      string word = "";
+      string name = "";
+      if (!scorepair.empty()) {
+	for (int i = 0; i < scorepair.length(); i++) {
+	  if (scorepair[i] == ' ') {
+	    name = word;
+	    word = "";
+	    //cout << "name is " << name << endl;
+	  } else if (i == scorepair.length() - 1) {
+	    word += scorepair[i];
+	    //cout << "score is " << word << endl;
+	    int tmp = std::stoi(word);
+	    //cout << "name and score is "  << name << word << endl;
+	    scoreMap.insert(std::pair<string, int>(name, tmp));
+	  } else {
+	    word = word + scorepair[i];
+	  }
+	}
+      }
+      
+    }
 
+    /*
+    for (map<string, int>::iterator it = scoreMap.begin(); it != scoreMap.end(); ++it) {
+      cout << it->first << ":" << it->second << endl;
+    }
+    */
+
+    // Build graph with structure map<string, vector<string> >
+    map<string, vector<string> > graph;
+    istringstream ssm(names);
+    std::string relation;
+    while (std::getline(ssm, relation, ',')) {
+      cout << "relation is " << relation << endl;
+      relation = relation.substr(0, relation.length() - 1);
+      string cur = "";
+      string node = "";
+      vector<string> neis;
+      if (!relation.empty()) {
+	for (int i = 0; i < relation.length(); i++) {
+	  if (relation[i] == ' ') {
+	    if (node == "") {
+	      node = cur;
+	    } else {
+	      neis.push_back(cur);
+	      
+	    }
+	    cur = "";
+	    //cout << "node is " << node << endl;
+	  } else if (i == relation.length() - 1) {
+	    cur += relation[i];
+	    neis.push_back(cur);
+	    cout << "neis are ";
+	    for (string nei : neis) {
+	      cout << nei;
+	    }
+	    cout << endl;
+	    //scoreMap.insert(std::pair<string, int>(name, tmp));
+	  } else {
+	    cur = cur + relation[i];
+	  }
+	}
+      }
+    }
+    /*
     // Read graph from edgelist.txt
     std::ifstream graphInput("edgelist.txt");
     if (graphInput == NULL) {
