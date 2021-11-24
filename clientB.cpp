@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <string.h>
 #include <netdb.h>
+#include <sstream>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -47,6 +48,7 @@ struct sockaddr_in central_addr; // Central server address
 char write_buf[MAXDATASIZE]; // Store input to write (send to AWS)
 //char compute_buf[MAXDATASIZE]; // Store input to compute (send to AWS)
 char write_result[MAXDATASIZE]; // Write result from AWS
+char final_res[MAXDATASIZE];
 //char compute_result[MAXDATASIZE]; // Compute result from AWS
 
 /**
@@ -103,6 +105,69 @@ int main(int argc, char *argv[]) {
   }
   printf("The client sent %s to the Central server \n", write_buf);
 
+  if (recv(sockfd_client_TCP, final_res, sizeof(final_res), 0) == FAIL) {
+    perror("[ERROR] Client B failed to receive result from the Central server.");
+    exit(1);
+  }
+
+   string res(final_res);
+  if (final_res[0] == '!') {
+    res = res.substr(1, sizeof(res));
+    vector<string> epath;
+    size_t estart;
+    size_t eend = 0;
+    while ((estart = res.find_first_not_of(",", eend)) != string::npos) {
+      eend = res.find(",", estart);
+      string ename = res.substr(estart, eend - estart);
+      epath.push_back(ename);
+    }
+    cout << "Found no compatibility for " << epath[1] << " and " << epath[0] << endl;
+  } else {
+    string names = "";
+  string cost = "";
+  for (int i = 0; i < res.length(); i++) {
+    if (res[i] == ',') {
+      names = cost;
+      cost = "";
+    } else if (i == res.length() - 1) {
+      cost = cost + res[i];
+    } else {
+      cost += res[i];
+    }
+  }
+
+  cout << "names are " << names.c_str() << endl;
+  cout << "cost is " << cost.c_str() << endl;
+
+  vector<string> path;
+  size_t start;
+  size_t end = 0;
+  while ((start = names.find_first_not_of(" ", end)) != string::npos) {
+    end = names.find(" ", start);
+    string name = names.substr(start, end - start);
+    path.push_back(name);
+  }
+
+  float gap;
+  stringstream ssc(cost);
+  ssc >> gap;
+  
+
+  string name1 = path[0];
+  string name2 = path[path.size() - 1];
+
+  cout << "Found compatibility for " << name2.c_str() << " and " << name1.c_str() << ":" << endl;
+  for (int i = path.size() - 1; i >= 0; i--) {
+    cout << path[i].c_str();
+    if (i != 0) {
+      cout << " --- ";
+    }
+  }
+  cout << endl;
+  printf("Compatibility score: %.2f \n", gap);
+  }
+
+  
   close(sockfd_client_TCP);
   return 0;
 }
