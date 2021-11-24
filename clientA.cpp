@@ -138,8 +138,8 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  cout << "names are " << names.c_str() << endl;
-  cout << "cost is " << cost.c_str() << endl;
+  //cout << "names are " << names.c_str() << endl;
+  //cout << "cost is " << cost.c_str() << endl;
 
   vector<string> path;
   size_t start;
