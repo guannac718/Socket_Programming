@@ -7,7 +7,7 @@ b. USC ID
   9635887510
   
 c. 
-
+  I have implemented a model where the Central server is able to take two input names from two clients with one input for each client, and based on a given graph     and a score list, calculate the minimum matching gap and find out the path that is associated with the min gap. During this process, the Central server has to       communicate with Server T where the graph is obtained, serverS where the score is provided, and serverP where the final calculation is being conducted. After       getting the result, the Central server will return the result to the clients. Also, the program will detect whether the two names are able to be paired, since       there exists the possibility that no path could be found to connect those two people.
 d. Code files
   1. clientA.cpp
     - Responsible for taking an input
@@ -37,4 +37,18 @@ d. Code files
     - Receive data from Central server and send back scores
   6. serverP.cpp
     - Receive topology and scores from Central server
-    - 
+    - Calculate matching gap and send back to Central server
+    
+e. Message transfer
+  When a server/client sends or receivs data, I put everything together in a string sperated by space, and then store them in a char array in order to send over TCP    and UDP. When the receiver has the message, I convert the char array into a string and split the string into several parts using the special character that          sperates each other.
+  
+g. Idiosyncrasy 
+  Based on the test results on a given Virtual Machine(Ubuntu), there was no idiosyncrasy found.
+  
+f. Citations
+  1. Beej's Socket Programming: https://www.beej.us/guide/bgnet/
+    Create sockets for TCP & UDP
+    Bind a socket
+    Send and receive data
+  2. Geeksforgeeks Dijkstra's algorithm with minimum path: https://www.geeksforgeeks.org/printing-paths-dijkstras-shortest-path-algorithm/
+    Find the minimum matching gap as well as the path associated with.
